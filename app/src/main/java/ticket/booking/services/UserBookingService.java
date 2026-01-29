@@ -51,7 +51,7 @@ private ObjectMapper objectMapper = new ObjectMapper();
     }
 
     private void saveUserListToFile() throws IOException {
-        File usersFile = new File(USER_FILE_PATH);
+        File usersFile = new File(USERS_PATH);
         objectMapper.writeValue(usersFile, userList);
     }
 
