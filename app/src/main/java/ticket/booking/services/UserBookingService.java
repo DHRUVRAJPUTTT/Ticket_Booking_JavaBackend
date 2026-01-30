@@ -1,4 +1,4 @@
-package ticket.booking.service;
+package ticket.booking.services;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,17 +21,23 @@ private List<User> userList;
 private ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String USERS_PATH = "../localDb/users.json";
-    //making constructor
-    //constructor has same name as class
-    //constructor is called 1st when a class is called
+    //making constructor,constructor has same name as class & constructor is called 1st when a class is called
     //we are assuming that user has already logged for accessing userbookingservices
 
     public UserBookingService(User user1) throws IOException
     {
         this.user = user1;
+       loadUsers();
+    }
+    //default constructor
+    public UserBookingService() throws IOException{
+loadUsers();
+
+    }
+    //FUNCTION FOR LOADING USERS FROM LOCAL DB
+    public List<User> loadUsers() throws IOException{
         File users = new File(USERS_PATH);
-        //TYPEREFERENCE IS USED IN OBJECTMAPPER IN RUNTIME TO RESOLVE THINGS
-        userList = objectMapper.readValue(users , new TypeReference<List<User>>(){});
+        return objectMapper.readValue(users,new TypeReference<List<User>>(){});
     }
     public Boolean loginUser(){
         Optional<User> foundUser = userList.stream().filter(user1 -> {
