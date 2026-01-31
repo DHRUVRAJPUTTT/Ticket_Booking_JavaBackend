@@ -24,7 +24,8 @@ public class App {
         try {
             userBookingService = new UserBookingService();
         } catch (IOException ex) {
-            System.out.println("There is something wrong with loading the database.");
+            System.out.println("There is something wrong with loading the database (ERROR IN COMPILATION).");
+            ex.printStackTrace();
             return;
         }
 

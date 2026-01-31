@@ -8,18 +8,20 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import java.sql.Time;
 import java.util.List;
 import java.util.Map;
-
-//@JsonIgnoreProperties(ignoreUnknown = true)
-//@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
-//@Builder
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonProperty;
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
+@Builder
 public class Train {
-
+    @JsonProperty("train_id")
     private String trainId;
-
+    @JsonProperty("train_no")
     private String trainNo;
 
     private List<List<Integer>> seats;
-
+    @JsonProperty("station_times")
     private Map<String, String> stationTimes;
 
     private List<String> stations;

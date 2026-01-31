@@ -3,7 +3,6 @@ package ticket.booking.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import ticket.booking.entities.Train;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -16,7 +15,7 @@ public class TrainService {
 
     private List<Train> trainList;
     private ObjectMapper objectMapper = new ObjectMapper();
-    private static final String TRAIN_DB_PATH = "../localDB/trains.json";
+    private static final String TRAIN_DB_PATH = "C:\\Users\\admin\\OneDrive\\Desktop\\IRCTC\\app\\src\\main\\java\\ticket\\booking\\localDb\\trains.json";
 
     public TrainService() throws IOException {
         File trains = new File(TRAIN_DB_PATH);

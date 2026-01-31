@@ -3,14 +3,18 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 
 public class User {
     private String name;
     private String password;
+    @JsonProperty("hashed_password")
     private String hashPassword;
+    @JsonProperty("tickets_booked")
     private List<Ticket> ticketsBooked;
+    @JsonProperty("user_id")
     private String userId;
     //constructor for user class
     public User(String name , String password , String hashPassword , List<Ticket> ticketsBooked , String userId){

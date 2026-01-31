@@ -14,44 +14,47 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
-public class UserBookingService
-{
+public class UserBookingService {
     private User user;
-private List<User> userList;
-private ObjectMapper objectMapper = new ObjectMapper();
+    private List<User> userList;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String USERS_PATH = "../localDb/users.json";
+    private static final String USERS_PATH = "C:\\Users\\admin\\OneDrive\\Desktop\\IRCTC\\app\\src\\main\\java\\ticket\\booking\\localDb\\users.json";
     //making constructor,constructor has same name as class & constructor is called 1st when a class is called
     //we are assuming that user has already logged for accessing userbookingservices
 
-    public UserBookingService(User user1) throws IOException
-    {
+    public UserBookingService(User user1) throws IOException {
         this.user = user1;
-       loadUsers();
-    }
-    //default constructor
-    public UserBookingService() throws IOException{
-loadUsers();
+        this.userList = loadUsers();
 
     }
-    //FUNCTION FOR LOADING USERS FROM LOCAL DB
-    public List<User> loadUsers() throws IOException{
-        File users = new File(USERS_PATH);
-        return objectMapper.readValue(users,new TypeReference<List<User>>(){});
+
+    //default constructor
+    public UserBookingService() throws IOException {
+        this.userList = loadUsers();
+
     }
-    public Boolean loginUser(){
+
+    //FUNCTION FOR LOADING USERS FROM LOCAL DB
+    public List<User> loadUsers() throws IOException {
+        File users = new File(USERS_PATH);
+        return objectMapper.readValue(users, new TypeReference<List<User>>() {
+        });
+    }
+
+    public Boolean loginUser() {
         Optional<User> foundUser = userList.stream().filter(user1 -> {
             return user1.getName().equals(user.getName()) && UserServiceUtil.checkPassword(user.getPassword(), user1.getHashedPassword());
         }).findFirst();
         return foundUser.isPresent();
     }
 
-    public Boolean signUp(User user1){
-        try{
+    public Boolean signUp(User user1) {
+        try {
             userList.add(user1);
             saveUserListToFile();
             return Boolean.TRUE;
-        }catch (IOException ex){
+        } catch (IOException ex) {
             return Boolean.FALSE;
         }
     }
@@ -61,17 +64,17 @@ loadUsers();
         objectMapper.writeValue(usersFile, userList);
     }
 
-    public void fetchBookings(){
+    public void fetchBookings() {
         Optional<User> userFetched = userList.stream().filter(user1 -> {
             return user1.getName().equals(user.getName()) && UserServiceUtil.checkPassword(user.getPassword(), user1.getHashedPassword());
         }).findFirst();
-        if(userFetched.isPresent()){
+        if (userFetched.isPresent()) {
             userFetched.get().printTickets();
         }
     }
 
     // todo: Complete this function
-    public Boolean cancelBooking(String ticketId){
+    public Boolean cancelBooking(String ticketId) {
 
         Scanner s = new Scanner(System.in);
         System.out.println("Enter the ticket id to cancel");
@@ -90,49 +93,110 @@ loadUsers();
         if (removed) {
             System.out.println("Ticket with ID " + ticketId + " has been canceled.");
             return Boolean.TRUE;
-        }else{
+        } else {
             System.out.println("No ticket found with ID " + ticketId);
             return Boolean.FALSE;
         }
     }
 
 
-    public List<Train> getTrains(String source, String destination){
-        try{
+    public List<Train> getTrains(String source, String destination) {
+        try {
             TrainService trainService = new TrainService();
             return trainService.searchTrains(source, destination);
-        }catch(IOException ex){
+        } catch (IOException ex) {
             return new ArrayList<>();
         }
     }
 
-    public List<List<Integer>> fetchSeats(Train train){
+    public List<List<Integer>> fetchSeats(Train train) {
         return train.getSeats();
     }
 
+//    public Boolean bookTrainSeat(Train train, int row, int seat) {
+//        try {
+//            TrainService trainService = new TrainService();
+//            List<List<Integer>> seats = train.getSeats();
+//            if (row >= 0 && row < seats.size() && seat >= 0 && seat < seats.get(row).size()) {
+//                if (seats.get(row).get(seat) == 0) {
+//                    seats.get(row).set(seat, 1);
+//                    train.setSeats(seats);
+//                    trainService.addTrain(train);
+//                    return true; // Booking successful
+//                } else {
+//                    return false; // Seat is already booked
+//                }
+//            } else {
+//                return false; // Invalid row or seat index
+//            }
+//        } catch (IOException ex) {
+//            return Boolean.FALSE;
+//        }
+//    }
+
+
     public Boolean bookTrainSeat(Train train, int row, int seat) {
-        try{
+        try {
             TrainService trainService = new TrainService();
             List<List<Integer>> seats = train.getSeats();
+
+            // Check if row and seat are valid
             if (row >= 0 && row < seats.size() && seat >= 0 && seat < seats.get(row).size()) {
+
+                // Check if seat is empty (0)
                 if (seats.get(row).get(seat) == 0) {
+
+                    // 1. Reserve the seat on the Train
                     seats.get(row).set(seat, 1);
                     train.setSeats(seats);
-                    trainService.addTrain(train);
-                    return true; // Booking successful
+                    trainService.addTrain(train); // Updates trains.json
+
+                    // 2. Create a Ticket for the User
+                    Ticket ticket = new Ticket();
+                    ticket.setTicketId(UUID.randomUUID().toString());
+                    ticket.setUserId(user.getUserId());
+                    ticket.setTrain(train);
+                    ticket.setSource("Bangalore"); // (You can update App.java to pass these later)
+                    ticket.setDestination("Delhi");
+                    ticket.setDateOfTravel("2023-12-12");
+
+                    // 3. Find the real user in the database list and add the ticket
+                    Optional<User> userToUpdate = userList.stream()
+                            .filter(u -> u.getName().equals(user.getName()))
+                            .findFirst();
+
+                    if (userToUpdate.isPresent()) {
+                        User dbUser = userToUpdate.get();
+
+                        // Initialize list if it's null (handles new users)
+                        if (dbUser.getTicketsBooked() == null) {
+                            dbUser.setTicketsBooked(new ArrayList<>());
+                        }
+
+                        dbUser.getTicketsBooked().add(ticket);
+
+                        // Update the current logged-in user reference so Option 3 works immediately
+                        this.user = dbUser;
+
+                        // 4. Save the User changes to users.json
+                        saveUserListToFile();
+                        return true;
+                    } else {
+                        return false; // User not found in DB
+                    }
                 } else {
                     return false; // Seat is already booked
                 }
             } else {
                 return false; // Invalid row or seat index
             }
-        }catch (IOException ex){
+        } catch (IOException ex) {
             return Boolean.FALSE;
         }
     }
-
-
-
-
-
 }
+
+
+
+
+
